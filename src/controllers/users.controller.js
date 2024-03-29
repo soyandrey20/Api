@@ -1,4 +1,4 @@
-import { getConnection } from '../database/connection.js';
+import { getConnection } from '../dataBase/connection.js';
 import sql from 'mssql';
 
 export const getUsers = async (req, res) => {
