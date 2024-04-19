@@ -3,8 +3,8 @@ import sql from 'mssql';
 
 export const getUsers = async (req, res) => {
     const pool = await getConnection();
-    const result = await pool.request().query("SELECT * FROM Usuarios");
-
+    const result = await pool.request().query("SELECT * FROM usuarios");
+    console.log(result.recordset);
     res.json(result.recordset);
 }
 
@@ -42,7 +42,8 @@ export const creatUser = async (req, res) => {
         .input('LastName_2', sql.VarChar, req.body.LastName_2)
         .input('email', sql.VarChar, req.body.email)
         .input('password', sql.VarChar, req.body.password)
-        .query('INSERT into Registros (name_1,LastName_1,LastName_2,email,password) VALUES (@name_1,@LastName_1,@LastName_2,@email,@password);SELECT SCOPE_IDENTITY() as id');
+        .input('Permisos', sql.VarChar, req.body.Permisos)
+        .query('INSERT into Registros (name_1,LastName_1,LastName_2,email,password,Permisos) VALUES (@name_1,@LastName_1,@LastName_2,@email,@password,@Permisos);SELECT SCOPE_IDENTITY() as id');
     console.log(result);
     res.json({
         id: result.recordset[0].id,
@@ -50,7 +51,8 @@ export const creatUser = async (req, res) => {
         LastName_1: req.body.LastName_1,
         LastName_2: req.body.LastName_2,
         email: req.body.email,
-        password: req.body.password
+        password: req.body.password,
+        Permisos: req.body.Permisos
     });
 
 
