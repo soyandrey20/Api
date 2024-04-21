@@ -12,9 +12,9 @@ export const getUser = async (req, res) => {
     try {
         const pool = await getConnection();
         const result = await pool.request()
-            .input('id', sql.Int, req.params.id)
+            .input('cedula', sql.Int, req.params.id)
 
-            .query("SELECT * FROM Registros WHERE id = @id");
+            .query("SELECT * FROM usuarios WHERE cedula = @cedula");
 
         if (result.rowsAffected[0] === 0) {
             return res.status(404).json({ msg: "Usuario no encontrado" });
@@ -37,21 +37,22 @@ export const creatUser = async (req, res) => {
 
     const result = await pool
         .request()
-        .input('name_1', sql.VarChar, req.body.name_1)
+        .input('Cedula', sql.VarChar, req.body.Cedula)
+        .input('Name_1', sql.VarChar, req.body.name_1)
         .input('LastName_1', sql.VarChar, req.body.LastName_1)
         .input('LastName_2', sql.VarChar, req.body.LastName_2)
-        .input('email', sql.VarChar, req.body.email)
-        .input('password', sql.VarChar, req.body.password)
+        .input('Email', sql.VarChar, req.body.email)
+        .input('Password', sql.VarChar, req.body.password)
         .input('Permisos', sql.VarChar, req.body.Permisos)
-        .query('INSERT into Registros (name_1,LastName_1,LastName_2,email,password,Permisos) VALUES (@name_1,@LastName_1,@LastName_2,@email,@password,@Permisos);SELECT SCOPE_IDENTITY() as id');
+        .query('INSERT into Usuarios (Cedula,Name_1,LastName_1,LastName_2,Email,Password,Permisos) VALUES (@Cedula,@Name_1,@LastName_1,@LastName_2,@Email,@Password,@Permisos);SELECT SCOPE_IDENTITY() as Cedula;');
     console.log(result);
     res.json({
-        id: result.recordset[0].id,
-        name_1: req.body.name_1,
+        Cedula: req.body.Cedula,
+        Name_1: req.body.Name_1,
         LastName_1: req.body.LastName_1,
         LastName_2: req.body.LastName_2,
-        email: req.body.email,
-        password: req.body.password,
+        Email: req.body.Email,
+        Password: req.body.Password,
         Permisos: req.body.Permisos
     });
 
@@ -62,19 +63,19 @@ export const updateUser = async (req, res) => {
 
     const pool = await getConnection();
     const result = await pool.request()
-        .input('id', sql.Int, req.params.id)
-        .input('email', sql.VarChar, req.body.email)
-        .input('password', sql.VarChar, req.body.password)
-        .input('name_1', sql.VarChar, req.body.name_1)
+        .input('Cedula', sql.Int, req.body.cedula)
+        .input('Email', sql.VarChar, req.body.email)
+        .input('Password', sql.VarChar, req.body.password)
+        .input('Name_1', sql.VarChar, req.body.name_1)
         .input('LastName_1', sql.VarChar, req.body.LastName_1)
         .input('LastName_2', sql.VarChar, req.body.LastName_2)
-        .query(`UPDATE Registros SET  email = @email, password = @password, name_1 = @name_1, LastName_1 = @LastName_1, LastName_2 = @LastName_2 WHERE id = @id`);
+        .query(`UPDATE Usuarios SET  email = @email, password = @password, name_1 = @name_1, LastName_1 = @LastName_1, LastName_2 = @LastName_2 WHERE Cedula = @Cedula`);
     console.log(result);
     if (result.rowsAffected[0] == 0) {
         return res.status(404).json({ msg: "Usuario no encontrado" });
     } else {
         return res.json({
-            id: req.params.id,
+            cedula: req.params.cedula,
             name_1: req.body.name_1,
             LastName_1: req.body.LastName_1,
             LastName_2: req.body.LastName_2,
@@ -90,8 +91,8 @@ export const deleteUser = async (req, res) => {
 
     const result = await pool
         .request()
-        .input('id', sql.Int, req.params.id)
-        .query('DELETE FROM Usuarios WHERE id = @id');
+        .input('Cedula', sql.Int, req.params.cedula)
+        .query('DELETE FROM Registros WHERE Cedula = @Cedula');
     console.log(result);
     if (result.rowsAffected[0] == 0) {
         return res.status(404).json({ msg: "Usuario no encontrado" });
