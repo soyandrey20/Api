@@ -1,5 +1,7 @@
 import { getConnection } from '../dataBase/connection.js';
 import sql from 'mssql';
+import { enviarCorreo } from '../mailer.js';
+
 
 export const getUsers = async (req, res) => {
     const pool = await getConnection();
@@ -20,6 +22,9 @@ export const getUser = async (req, res) => {
             return res.status(404).json({ msg: "Usuario no encontrado" });
         } else {
             console.log(result.recordset[0]);
+
+
+
             res.json(result.recordset[0]);
         }
     } catch (error) {
@@ -35,6 +40,8 @@ export const creatUser = async (req, res) => {
 
     const pool = await getConnection();
 
+
+    
     const result = await pool
         .request()
         .input('Cedula', sql.VarChar, req.body.Cedula)
@@ -98,5 +105,53 @@ export const deleteUser = async (req, res) => {
         return res.status(404).json({ msg: "Usuario no encontrado" });
     } else {
         return res.json({ msg: "Usuario eliminado" });
+    }
+}
+
+
+export const getPassword = async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const result = await pool.request()
+            .input('cedula', sql.Int, req.params.id)
+
+            .query("SELECT * FROM usuarios WHERE cedula = @cedula");
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ msg: "Usuario no encontrado" });
+        } else {
+
+
+
+            enviarCorreo(result.recordset[0].Email,
+                'Contraseña de tu Cuenta', 'Estimado ' + result.recordset[0].Name_1 +
+
+                ',\n\n\nEspero que este mensaje te encuentre bien.' +
+                ' En respuesta a tu solicitud de restablecimiento de contraseña,' +
+                ' Aqui esta la contraseña para tu cuenta.' +
+                '\nA continuación, encontrarás tus credenciales: ' +
+
+                '\n\nNombre de usuario: ' + result.recordset[0].Email +
+                '\nContraseña: ' + result.recordset[0].Password +
+
+                '\n\n\nSi tienes alguna pregunta o necesitas asistencia adicional,' +
+                ' no dudes en ponerte en contacto con nuestro equipo de soporte.' +
+
+                '\n\n\nGracias por tu comprensión y cooperación. \n' +
+
+            '\n\nAtentamente, \nEl equipo de soporte Techno Croption.'
+
+
+
+            );
+
+            res.json({
+                msg: "Correo enviado",
+
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error interno del servidor" });
     }
 }

@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "start": "node index.js"
-   
   },
   "keywords": [],
   "author": "",
@@ -21,6 +20,7 @@
     "nodemailer": "^6.9.13"
   },
   "devDependencies": {
+    "@types/nodemailer": "^6.4.14",
     "nodemon": "^3.1.0"
   }
 }
