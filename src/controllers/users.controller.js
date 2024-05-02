@@ -131,7 +131,7 @@ export const getPassword = async (req, res) => {
                 ' Aqui esta la contraseña para tu cuenta.' +
                 '\nA continuación, encontrarás tus credenciales: ' +
 
-                '\n\nNombre de usuario: ' + result.recordset[0].Email +
+                '\n\nNombre de usuario: ' + result.recordset[0].Cedula +
                 '\nContraseña: ' + result.recordset[0].Password +
 
                 '\n\n\nSi tienes alguna pregunta o necesitas asistencia adicional,' +
@@ -154,4 +154,6 @@ export const getPassword = async (req, res) => {
         console.error(error);
         res.status(500).json({ msg: "Error interno del servidor" });
     }
+
+    
 }
