@@ -14,7 +14,7 @@ export const getUser = async (req, res) => {
     try {
         const pool = await getConnection();
         const result = await pool.request()
-            .input('cedula', sql.Int, req.params.id)
+            .input('cedula', sql.NVarChar, req.params.id)
 
             .query("SELECT * FROM usuarios WHERE cedula = @cedula");
 
@@ -41,26 +41,30 @@ export const creatUser = async (req, res) => {
     const pool = await getConnection();
 
 
-    
+
     const result = await pool
         .request()
         .input('Cedula', sql.VarChar, req.body.Cedula)
         .input('Name_1', sql.VarChar, req.body.name_1)
+        .input('Name_2', sql.VarChar, req.body.name_2)
         .input('LastName_1', sql.VarChar, req.body.LastName_1)
         .input('LastName_2', sql.VarChar, req.body.LastName_2)
         .input('Email', sql.VarChar, req.body.email)
         .input('Password', sql.VarChar, req.body.password)
         .input('Permisos', sql.VarChar, req.body.Permisos)
-        .query('INSERT into Usuarios (Cedula,Name_1,LastName_1,LastName_2,Email,Password,Permisos) VALUES (@Cedula,@Name_1,@LastName_1,@LastName_2,@Email,@Password,@Permisos);SELECT SCOPE_IDENTITY() as Cedula;');
+        .input('Estado', sql.Bit, req.body.Estado)
+        .query('INSERT into Usuarios (Cedula,Name_1,Name_2,LastName_1,LastName_2,Email,Password,Permisos,Estado) VALUES (@Cedula,@Name_1,@Name_2,@LastName_1,@LastName_2,@Email,@Password,@Permisos,@Estado);SELECT SCOPE_IDENTITY() as Cedula;');
     console.log(result);
     res.json({
         Cedula: req.body.Cedula,
         Name_1: req.body.Name_1,
+        Name_2: req.body.Name_2,
         LastName_1: req.body.LastName_1,
         LastName_2: req.body.LastName_2,
         Email: req.body.Email,
         Password: req.body.Password,
-        Permisos: req.body.Permisos
+        Permisos: req.body.Permisos,
+        Estado: req.body.Estado
     });
 
 
@@ -70,44 +74,71 @@ export const updateUser = async (req, res) => {
 
     const pool = await getConnection();
     const result = await pool.request()
-        .input('Cedula', sql.Int, req.body.cedula)
+        .input('Cedula', sql.VarChar, req.body.cedula)
         .input('Email', sql.VarChar, req.body.email)
         .input('Password', sql.VarChar, req.body.password)
         .input('Name_1', sql.VarChar, req.body.name_1)
+        .input('Name_2', sql.VarChar, req.body.name_2)
         .input('LastName_1', sql.VarChar, req.body.LastName_1)
         .input('LastName_2', sql.VarChar, req.body.LastName_2)
-        .query(`UPDATE Usuarios SET  email = @email, password = @password, name_1 = @name_1, LastName_1 = @LastName_1, LastName_2 = @LastName_2 WHERE Cedula = @Cedula`);
-    console.log(result);
+        .input('Permisos', sql.VarChar, req.body.Permisos)
+        .input('Estado', sql.Bit, req.body.Estado)
+
+        .query(`UPDATE Usuarios SET  email = @email, password = @password, Name_1 = @Name_1, LastName_1 = @LastName_1, LastName_2 = @LastName_2, Permisos = @Permisos, Estado=@Estado WHERE Cedula = @Cedula`);
+    console.log(req.body.Estado);
     if (result.rowsAffected[0] == 0) {
         return res.status(404).json({ msg: "Usuario no encontrado" });
     } else {
         return res.json({
             cedula: req.params.cedula,
             name_1: req.body.name_1,
+            name_2: req.body.name_2,
             LastName_1: req.body.LastName_1,
             LastName_2: req.body.LastName_2,
             email: req.body.email,
-            password: req.body.password
+            password: req.body.password,
+            permisos: req.body.Permisos,
+            Estado: req.body.Estado
         });
     }
 }
 
+// export const deleteUser = async (req, res) => {
+
+//     const pool = await getConnection();
+
+//     const result = await pool
+//         .request()
+//         .input('Cedula', sql.Int, req.params.cedula)
+//         .query('DELETE FROM Registros WHERE Cedula = @Cedula');
+//     console.log(result);
+//     if (result.rowsAffected[0] == 0) {
+//         return res.status(404).json({ msg: "Usuario no encontrado" });
+//     } else {
+//         return res.json({ msg: "Usuario eliminado" });
+//     }
+// }
+
 export const deleteUser = async (req, res) => {
 
     const pool = await getConnection();
+    const result = await pool.request()
+        .input('Cedula', sql.VarChar, req.body.cedula)
 
-    const result = await pool
-        .request()
-        .input('Cedula', sql.Int, req.params.cedula)
-        .query('DELETE FROM Registros WHERE Cedula = @Cedula');
-    console.log(result);
+        .input('Estado', sql.Bit, req.body.Estado)
+
+        .query(`UPDATE Usuarios SET   Estado=@Estado WHERE Cedula = @Cedula`);
+    console.log(req.body.Estado);
     if (result.rowsAffected[0] == 0) {
         return res.status(404).json({ msg: "Usuario no encontrado" });
     } else {
-        return res.json({ msg: "Usuario eliminado" });
+        return res.json({
+            cedula: req.params.cedula,
+
+            Estado: req.body.Estado
+        });
     }
 }
-
 
 export const getPassword = async (req, res) => {
     try {
@@ -155,5 +186,5 @@ export const getPassword = async (req, res) => {
         res.status(500).json({ msg: "Error interno del servidor" });
     }
 
-    
+
 }
