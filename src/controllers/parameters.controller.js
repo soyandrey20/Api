@@ -58,11 +58,28 @@ export const createSensors = async (req, res) => {
         .query('INSERT into sensor (informacion,id_tp_sensor) VALUES (@informacion,@id_tp_sensor);SELECT SCOPE_IDENTITY() as Descripcion;');
     console.log(result);
     res.json({
-        msg: 'Parametro creado',
-        Descripcion: req.body.Descripcion,
+        msg: 'sensor creado',
+       
     });
 }
+export const createParametro = async (req, res) => {
+    console.log(req.body);
 
+    const pool = await getConnection();
+
+    const result = await pool
+        .request()
+
+        .input('inferior', sql.VarChar, req.body.inferior)
+        .input('superior', sql.VarChar, req.body.superior)
+        .input('id_tp_para', sql.Int, req.body.id_tp_para)
+        .query('INSERT into Parametro ( id_Tp_Parametro,Rango_inferior,Rango_Superior) VALUES ( @id_tp_para,@inferior,@superior); ');
+    console.log(result);
+    res.json({
+        msg: 'Parametro creado',
+       
+    });
+}
 
 
 export const getTipeSensors = async (req, res) => {
@@ -86,4 +103,31 @@ export const deleteTipeSensor = async (req, res) => {
     } else {
         return res.json({ msg: "Tipo de sensor eliminado" });
     }
+}
+
+
+export const createParaSensor = async (req, res) => {
+    console.log(req.body);
+
+    const pool = await getConnection();
+
+    const result = await pool
+        .request()
+
+        .input('id_sensor', sql.Int, req.body.id_sensor)
+        .input('id_parametro', sql.Int, req.body.id_parametro)
+        .query('INSERT into Parametro_sensor (id_sensor,id_parametro) VALUES (@id_sensor,@id_parametro);SELECT SCOPE_IDENTITY() as Descripcion;');
+    console.log(result);
+    res.json({
+        msg: 'Parametro creado',
+        Descripcion: req.body.Descripcion,
+    });
+}
+
+
+export const getParaSensor = async (req, res) => {
+    const pool = await getConnection();
+    const result = await pool.request().query('SELECT * FROM Parametro_sensor');
+    res.json(result.recordset);
+    console.log(result.recordset);
 }

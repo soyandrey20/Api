@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { creatUser, deleteUser, getPassword, getUser, getUsers, updateUser } from "../controllers/users.controller.js";
-import {  createSensors, getTipeParameters, getTipeSensors,deleteTipeSensor, createTipeParameters, createTipeSensors } from "../controllers/parameters.controller.js";
+import {  createSensors, getTipeParameters, getTipeSensors,deleteTipeSensor, createTipeParameters, createTipeSensors, createParaSensor, getParaSensor, createParametro } from "../controllers/parameters.controller.js";
 
 const router = Router();
 
@@ -14,7 +14,7 @@ router.post("/Usuarios", creatUser);
 //actualizar un usuario
 router.put("/Usuarios/:id", updateUser);
 //eliminar un usuario
-router.delete("/Usuarios/:id", deleteUser);
+router.put("/DeleteUsuarios/:id", deleteUser);
 //enviar correo
 router.get("/enviarcorreo/:id", getPassword);
 //crear un tipo de parametro
@@ -29,5 +29,11 @@ router.get("/Tipo_sensor", getTipeSensors);
 router.delete("/Tipo_sensor/:Descripcion", deleteTipeSensor);
 //crear un sensor
 router.post("/sensor", createSensors);
-
+//crear un parametro
+router.post("/parametro", createParametro);
+//crear parametro_sensor
+router.post("/parametro_sensor", createParaSensor);
+//obtener los parametros de un sensor
+router.get("/parametro_sensor",getParaSensor);
+//  DeleteUsuarios
 export default router;
