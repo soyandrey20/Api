@@ -6,7 +6,7 @@ import { enviarCorreo } from '../mailer.js';
 export const getUsers = async (req, res) => {
     const pool = await getConnection();
     const result = await pool.request().query("SELECT * FROM usuarios");
-    console.log(result.recordset);
+
     res.json(result.recordset);
 }
 
@@ -32,121 +32,20 @@ export const getUser = async (req, res) => {
         res.status(500).json({ msg: "Error interno del servidor" });
     }
 }
-
-
-
-export const creatUser = async (req, res) => {
-    console.log(req.body);
-
+export const getPeople = async (req, res) => {
     const pool = await getConnection();
-
-
-
-    const result = await pool
-        .request()
-        .input('Cedula', sql.VarChar, req.body.Cedula)
-        .input('Name_1', sql.VarChar, req.body.name_1)
-        .input('Name_2', sql.VarChar, req.body.name_2)
-        .input('LastName_1', sql.VarChar, req.body.LastName_1)
-        .input('LastName_2', sql.VarChar, req.body.LastName_2)
-        .input('Email', sql.VarChar, req.body.email)
-        .input('Password', sql.VarChar, req.body.password)
-        .input('Permisos', sql.VarChar, req.body.Permisos)
-        .input('Estado', sql.Bit, req.body.Estado)
-        .query('INSERT into Usuarios (Cedula,Name_1,Name_2,LastName_1,LastName_2,Email,Password,Permisos,Estado) VALUES (@Cedula,@Name_1,@Name_2,@LastName_1,@LastName_2,@Email,@Password,@Permisos,@Estado);SELECT SCOPE_IDENTITY() as Cedula;');
-    console.log(result);
-    res.json({
-        Cedula: req.body.Cedula,
-        Name_1: req.body.Name_1,
-        Name_2: req.body.Name_2,
-        LastName_1: req.body.LastName_1,
-        LastName_2: req.body.LastName_2,
-        Email: req.body.Email,
-        Password: req.body.Password,
-        Permisos: req.body.Permisos,
-        Estado: req.body.Estado
-    });
-
-
+    const result = await pool.request().query("SELECT * FROM persona");
+    console.log(result.recordset);
+    res.json(result.recordset);
 }
 
-export const updateUser = async (req, res) => {
-
-    const pool = await getConnection();
-    const result = await pool.request()
-        .input('Cedula', sql.VarChar, req.body.cedula)
-        .input('Email', sql.VarChar, req.body.email)
-        .input('Password', sql.VarChar, req.body.password)
-        .input('Name_1', sql.VarChar, req.body.name_1)
-        .input('Name_2', sql.VarChar, req.body.name_2)
-        .input('LastName_1', sql.VarChar, req.body.LastName_1)
-        .input('LastName_2', sql.VarChar, req.body.LastName_2)
-        .input('Permisos', sql.VarChar, req.body.Permisos)
-        .input('Estado', sql.Bit, req.body.Estado)
-
-        .query(`UPDATE Usuarios SET  email = @email, password = @password, Name_1 = @Name_1, LastName_1 = @LastName_1, LastName_2 = @LastName_2, Permisos = @Permisos, Estado=@Estado WHERE Cedula = @Cedula`);
-    console.log(req.body.Estado);
-    if (result.rowsAffected[0] == 0) {
-        return res.status(404).json({ msg: "Usuario no encontrado" });
-    } else {
-        return res.json({
-            cedula: req.params.cedula,
-            name_1: req.body.name_1,
-            name_2: req.body.name_2,
-            LastName_1: req.body.LastName_1,
-            LastName_2: req.body.LastName_2,
-            email: req.body.email,
-            password: req.body.password,
-            permisos: req.body.Permisos,
-            Estado: req.body.Estado
-        });
-    }
-}
-
-// export const deleteUser = async (req, res) => {
-
-//     const pool = await getConnection();
-
-//     const result = await pool
-//         .request()
-//         .input('Cedula', sql.Int, req.params.cedula)
-//         .query('DELETE FROM Registros WHERE Cedula = @Cedula');
-//     console.log(result);
-//     if (result.rowsAffected[0] == 0) {
-//         return res.status(404).json({ msg: "Usuario no encontrado" });
-//     } else {
-//         return res.json({ msg: "Usuario eliminado" });
-//     }
-// }
-
-export const deleteUser = async (req, res) => {
-
-    const pool = await getConnection();
-    const result = await pool.request()
-        .input('Cedula', sql.VarChar, req.body.cedula)
-
-        .input('Estado', sql.Bit, req.body.Estado)
-
-        .query(`UPDATE Usuarios SET   Estado=@Estado WHERE Cedula = @Cedula`);
-    console.log(req.body.Estado);
-    if (result.rowsAffected[0] == 0) {
-        return res.status(404).json({ msg: "Usuario no encontrado" });
-    } else {
-        return res.json({
-            cedula: req.params.cedula,
-
-            Estado: req.body.Estado
-        });
-    }
-}
-
-export const getPassword = async (req, res) => {
+export const getPerson = async (req, res) => {
     try {
         const pool = await getConnection();
         const result = await pool.request()
-            .input('cedula', sql.Int, req.params.id)
+            .input('cedula', sql.NVarChar, req.params.id)
 
-            .query("SELECT * FROM usuarios WHERE cedula = @cedula");
+            .query("SELECT * FROM persona WHERE cedula = @cedula");
 
         if (result.rowsAffected[0] === 0) {
             return res.status(404).json({ msg: "Usuario no encontrado" });
@@ -154,37 +53,153 @@ export const getPassword = async (req, res) => {
 
 
 
-            enviarCorreo(result.recordset[0].Email,
-                'Contraseña de tu Cuenta', 'Estimado ' + result.recordset[0].Name_1 +
-
-                ',\n\n\nEspero que este mensaje te encuentre bien.' +
-                ' En respuesta a tu solicitud de restablecimiento de contraseña,' +
-                ' Aqui esta la contraseña para tu cuenta.' +
-                '\nA continuación, encontrarás tus credenciales: ' +
-
-                '\n\nNombre de usuario: ' + result.recordset[0].Cedula +
-                '\nContraseña: ' + result.recordset[0].Password +
-
-                '\n\n\nSi tienes alguna pregunta o necesitas asistencia adicional,' +
-                ' no dudes en ponerte en contacto con nuestro equipo de soporte.' +
-
-                '\n\n\nGracias por tu comprensión y cooperación. \n' +
-
-            '\n\nAtentamente, \nEl equipo de soporte Techno Croption.'
-
-
-
-            );
-
-            res.json({
-                msg: "Correo enviado",
-
-            });
+            res.json(result.recordset[0]);
         }
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Error interno del servidor" });
     }
+}
 
+
+export const createUser = async (req, res) => {
+    console.log(req.body);
+
+    const pool = await getConnection();
+
+    const request = new sql.Request();
+
+    // Primera consulta para insertar en la tabla persona
+    await request
+        .input('Cedula', sql.VarChar, req.body.Cedula)
+        .input('id_tipo_persona', sql.Int, req.body.id_tipo_persona)
+        .input('Nombre_1', sql.VarChar, req.body.Nombre_1)
+        .input('Nombre_2', sql.VarChar, req.body.Nombre_2)
+        .input('LastName_1', sql.VarChar, req.body.LastName_1)
+        .input('LastName_2', sql.VarChar, req.body.LastName_2)
+        .input('Email', sql.VarChar, req.body.Email)
+
+        .input('Estado', sql.Bit, true)
+        .query(`INSERT INTO persona (Cedula, id_tipo_persona, Nombre_1, Nombre_2, LastName_1, LastName_2, Email, Estado) VALUES (@Cedula, @id_tipo_persona, @Nombre_1, @Nombre_2, @LastName_1, @LastName_2, @Email, @Estado)`);
+    // Segunda consulta para insertar en la tabla Usuarios
+    await request
+        .input('Cedula_usuario', sql.VarChar, req.body.Cedula)
+        .input('Password', sql.VarChar, req.body.password)
+        .input('Permisos_usuario', sql.VarChar, req.body.Permisos)
+        .input('Estado_usuario', sql.Bit, true)
+        .query(`INSERT INTO Usuarios (Cedula, Password, Permisos, Estado) VALUES (@Cedula_usuario, @Password, @Permisos_usuario, @Estado_usuario)`);
+    res.json(req.body);
+}
+
+
+export const updateUser = async (req, res) => {
+    const pool = await getConnection();
+    console.log(req.body.Cedula);
+    const result = await pool.request()
+        .input('cedula', sql.VarChar, req.body.Cedula)
+        .input('id_tipo_persona', sql.Int, req.body.id_tipo_persona)
+        .input('Nombre_1', sql.VarChar, req.body.Nombre_1)
+        .input('Nombre_2', sql.VarChar, req.body.Nombre_2)
+        .input('LastName_1', sql.VarChar, req.body.LastName_1)
+        .input('LastName_2', sql.VarChar, req.body.LastName_2)
+        .input('Email', sql.VarChar, req.body.Email)
+        .input('Estado', sql.Bit, req.body.Estado)
+        .query(`UPDATE persona SET id_tipo_persona = @id_tipo_persona, Nombre_1 = @Nombre_1, Nombre_2 = @Nombre_2, LastName_1 = @LastName_1, LastName_2 = @LastName_2, Email = @Email, Estado = @Estado WHERE Cedula = @cedula`);
+
+    if (result.rowsAffected[0] == 0) {
+        console.log(result.rowsAffected[0]);
+        return res.status(404).json({ msg: "Usuario no encontrado" });
+    }
+    res.json({
+        cedula: req.params.id,
+        Nombre_1: req.body.Nombre_1,
+        Nombre_2: req.body.Nombre_2,
+        LastName_1: req.body.LastName_1,
+        LastName_2: req.body.LastName_2,
+        Email: req.body.Email,
+        Estado: req.body.Estado
+    });
+}
+
+
+export const deleteUser = async (req, res) => {
+
+    const pool = await getConnection();
+    const request = new sql.Request();
+    await request
+        .input('Cedula', sql.VarChar, req.body.cedula)
+        .input('Estado', sql.Bit, req.body.Estado)
+        .query(`UPDATE Usuarios SET   Estado=@Estado WHERE Cedula = @Cedula`);
+
+    await request
+        .input('Cedula_persona', sql.VarChar, req.body.cedula)
+        .input('Estado_persona', sql.Bit, req.body.Estado)
+        .query(`UPDATE persona SET   estado=@Estado_persona WHERE Cedula = @Cedula_persona`);
+
+
+
+
+
+
+    console.log(req.body.Estado);
+    if (req.body.Estado == 1) {
+        res.json({ msg: "Usuario activado" });
+    } else {
+        res.json({ msg: "Usuario desactivado" });
+
+    }
 
 }
+
+export const getPassword = async (req, res) => {
+    try {
+        const pool = await getConnection();
+        const cedula = req.body.id; 
+        console.log(cedula);
+        const [usuariosResult, personaResult] = await Promise.all([
+            new sql.Request()
+                .input('cedula', sql.VarChar, cedula)
+                .query("SELECT Password FROM usuarios WHERE Cedula = @cedula"),
+            new sql.Request()
+                .input('cedula', sql.VarChar, cedula)
+                .query("SELECT Nombre_1 AS name, email FROM persona WHERE cedula = @cedula")
+        ]);
+
+        if (usuariosResult.recordset.length === 0 || personaResult.recordset.length === 0) {
+            return res.status(404).json({ msg: "Usuario no encontrado" });
+        }
+
+        const { Password: contraseña } = usuariosResult.recordset[0];
+        const { name, email } = personaResult.recordset[0];
+
+        const emailContent = `
+        Estimado ${name},
+  
+        \n\n\nEspero que este mensaje te encuentre bien.
+  
+        En respuesta a tu solicitud de restablecimiento de contraseña, aquí está la contraseña para tu cuenta.
+  
+        \nA continuación, encontrarás tus credenciales:
+  
+        \n\nNombre de usuario: ${cedula}
+        \nContraseña: ${contraseña}
+  
+        \n\n\nSi tienes alguna pregunta o necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte.
+  
+        \n\n\nGracias por tu comprensión y cooperación.
+  
+        \n\nAtentamente,
+  
+        El equipo de soporte Techno Croption.
+      `;
+
+        enviarCorreo(email, 'Contraseña de tu Cuenta', emailContent);
+
+        res.json({ msg: "Correo enviado" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error interno del servidor" });
+    }
+};
+
