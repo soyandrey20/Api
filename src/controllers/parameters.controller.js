@@ -561,7 +561,7 @@ export const addTpPersona = async (req, res) => {
     const pool = await getConnection();
     const result = await pool
         .request()
-        .input('Descripcion', sql.VarChar, req.body.nombre)
+        .input('Descripcion', sql.VarChar, req.body.descripcion)
         .input('estado', sql.Bit, true)
         .query('INSERT into Tipo_persona (descripcion,estado) VALUES (@Descripcion,@estado);SELECT SCOPE_IDENTITY() as Descripcion;');
 }
@@ -578,7 +578,7 @@ export const updateTpPersona = async (req, res) => {
     const pool = await getConnection();
     const result = await pool.request()
         .input('id', sql.Int, req.body.id)
-        .input('Descripcion', sql.VarChar, req.body.nombre)
+        .input('Descripcion', sql.VarChar, req.body.descripcion)
         .input('estado', sql.Bit, req.body.estado)
         .query('UPDATE Tipo_persona SET descripcion = @Descripcion,estado = @estado WHERE id = @id');
     console.log(result);
@@ -622,6 +622,7 @@ export const getFinca = async (req, res) => {
     const pool = await getConnection();
     const result = await pool.request().query('SELECT * FROM Finca');
     res.json(result.recordset);
+    console.table(result.recordset);
 
 
 
