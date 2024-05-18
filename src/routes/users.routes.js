@@ -28,7 +28,9 @@ import {
     updateVereda,
     deleteVereda,
     updateParaSensor,
-    deleteParaSensor
+    deleteParaSensor,
+    updateTpPersona,
+    DeleteTpPersona
 } from "../controllers/parameters.controller.js";
 
 const router = Router();
@@ -158,7 +160,10 @@ router.put("/deleteVereda/:id", deleteVereda)
 router.post("/Tipo_persona", addTpPersona)
 //get tipo de persona
 router.get("/Tipo_persona", getTpPersona)
-
+//update tipo de persona
+ router.put("/Tipo_persona/:id", updateTpPersona)
+//delete tipo de persona
+router.put("/deleteTipo_persona/:id", DeleteTpPersona)
 
 
 

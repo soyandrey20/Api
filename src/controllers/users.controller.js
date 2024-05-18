@@ -6,7 +6,7 @@ import { enviarCorreo } from '../mailer.js';
 export const getUsers = async (req, res) => {
     const pool = await getConnection();
     const result = await pool.request().query("SELECT * FROM usuarios");
-
+    console.table(result.recordset);
     res.json(result.recordset);
 }
 
