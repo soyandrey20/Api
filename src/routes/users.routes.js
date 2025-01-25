@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { createUser, deleteUser, getPassword, getPeople, getPerson, getUser, getUsers, updateUser } from "../controllers/users.controller.js";
+import { createUser, deleteUser, exportPDF, getPassword, getPeople, getPerson, getUser, getUsers, updateUser } from "../controllers/users.controller.js";
 import {
     getSensors, createSensors, getTipeParameters,
     getTipeSensors, deleteTipeSensor, createTipeParameters,
@@ -30,7 +30,8 @@ import {
     updateParaSensor,
     deleteParaSensor,
     updateTpPersona,
-    DeleteTpPersona
+    DeleteTpPersona,
+    getValoresArduino
 } from "../controllers/parameters.controller.js";
 
 const router = Router();
@@ -38,9 +39,11 @@ const router = Router();
 
 //obtener personas
 router.get("/persona", getPeople);
-
 //obtener una persona
 router.get("/persona/:id", getPerson);
+//obtener pdf personas
+router.get("/pdfpersona", exportPDF);
+
 
 //obtener usuarios
 router.get("/Usuarios", getUsers);
@@ -161,7 +164,7 @@ router.post("/Tipo_persona", addTpPersona)
 //get tipo de persona
 router.get("/Tipo_persona", getTpPersona)
 //update tipo de persona
- router.put("/Tipo_persona/:id", updateTpPersona)
+router.put("/Tipo_persona/:id", updateTpPersona)
 //delete tipo de persona
 router.put("/deleteTipo_persona/:id", DeleteTpPersona)
 
@@ -178,3 +181,6 @@ router.put("/deleteFincas/:id", deleteFinca)
 
 
 export default router;
+
+
+router.post("/AgregarValor", getValoresArduino);

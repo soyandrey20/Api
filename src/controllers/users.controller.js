@@ -1,7 +1,8 @@
 import { getConnection } from '../dataBase/connection.js';
 import sql from 'mssql';
 import { enviarCorreo } from '../mailer.js';
-
+import { PDFDocument } from 'pdf-lib';
+import fs from 'fs';
 
 export const getUsers = async (req, res) => {
     const pool = await getConnection();
@@ -21,7 +22,7 @@ export const getUser = async (req, res) => {
         if (result.rowsAffected[0] === 0) {
             return res.status(404).json({ msg: "Usuario no encontrado" });
         } else {
-            console.log(result.recordset[0]);
+            console.table(result.recordset[0]);
 
 
 
@@ -35,7 +36,7 @@ export const getUser = async (req, res) => {
 export const getPeople = async (req, res) => {
     const pool = await getConnection();
     const result = await pool.request().query("SELECT * FROM persona");
-    console.log(result.recordset);
+    console.table(result.recordset);
     res.json(result.recordset);
 }
 
@@ -63,7 +64,7 @@ export const getPerson = async (req, res) => {
 
 
 export const createUser = async (req, res) => {
-    console.log(req.body);
+    console.table(req.body);
 
     const pool = await getConnection();
 
@@ -94,7 +95,7 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     const pool = await getConnection();
-    console.log(req.body.Cedula);
+    console.table(req.body.Cedula);
     const result = await pool.request()
         .input('cedula', sql.VarChar, req.body.Cedula)
         .input('id_tipo_persona', sql.Int, req.body.id_tipo_persona)
@@ -103,11 +104,11 @@ export const updateUser = async (req, res) => {
         .input('LastName_1', sql.VarChar, req.body.LastName_1)
         .input('LastName_2', sql.VarChar, req.body.LastName_2)
         .input('Email', sql.VarChar, req.body.Email)
-        .input('Estado', sql.Bit, req.body.Estado)
-        .query(`UPDATE persona SET id_tipo_persona = @id_tipo_persona, Nombre_1 = @Nombre_1, Nombre_2 = @Nombre_2, LastName_1 = @LastName_1, LastName_2 = @LastName_2, Email = @Email, Estado = @Estado WHERE Cedula = @cedula`);
+
+        .query(`UPDATE persona SET id_tipo_persona = @id_tipo_persona, Nombre_1 = @Nombre_1, Nombre_2 = @Nombre_2, LastName_1 = @LastName_1, LastName_2 = @LastName_2, Email = @Email WHERE Cedula = @cedula`);
 
     if (result.rowsAffected[0] == 0) {
-        console.log(result.rowsAffected[0]);
+        console.table(result.rowsAffected[0]);
         return res.status(404).json({ msg: "Usuario no encontrado" });
     }
     res.json({
@@ -141,7 +142,7 @@ export const deleteUser = async (req, res) => {
 
 
 
-    console.log(req.body.Estado);
+    console.table(req.body.Estado);
     if (req.body.Estado == 1) {
         res.json({ msg: "Usuario activado" });
     } else {
@@ -154,8 +155,8 @@ export const deleteUser = async (req, res) => {
 export const getPassword = async (req, res) => {
     try {
         const pool = await getConnection();
-        const cedula = req.body.id; 
-        console.log(cedula);
+        const cedula = req.body.id;
+        console.table(cedula);
         const [usuariosResult, personaResult] = await Promise.all([
             new sql.Request()
                 .input('cedula', sql.VarChar, cedula)
@@ -173,27 +174,36 @@ export const getPassword = async (req, res) => {
         const { name, email } = personaResult.recordset[0];
 
         const emailContent = `
-        Estimado ${name},
-  
-        \n\n\nEspero que este mensaje te encuentre bien.
-  
-        En respuesta a tu solicitud de restablecimiento de contraseña, aquí está la contraseña para tu cuenta.
-  
-        \nA continuación, encontrarás tus credenciales:
-  
-        \n\nNombre de usuario: ${cedula}
-        \nContraseña: ${contraseña}
-  
-        \n\n\nSi tienes alguna pregunta o necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de soporte.
-  
-        \n\n\nGracias por tu comprensión y cooperación.
-  
-        \n\nAtentamente,
-  
-        El equipo de soporte Techno Croption.
+Estimado(a) ${name}\n:
+
+Nos complace informarle que su solicitud de restablecimiento de contraseña ha sido procesada exitosamente. A continuación, encontrará sus credenciales de inicio de sesión para acceder a su cuenta de Techno Croption:\n
+
+Nombre de usuario: ${cedula}\n
+Contraseña:  ${contraseña} \n
+
+Recomendaciones de seguridad:\n
+
+-Por su seguridad, le recomendamos cambiar su contraseña actual por una nueva y compleja que incluya mayúsculas, minúsculas, números y símbolos especiales.\n
+-Evite utilizar la misma contraseña para diferentes cuentas.\n
+-No comparta su contraseña con nadie.\n
+-Mantenga su información personal y de cuenta actualizada.\n
+
+Soporte técnico:\n
+Si tiene alguna pregunta o necesita asistencia adicional para acceder a su cuenta, no dude en ponerse en contacto con nuestro equipo de soporte técnico a través de los siguientes canales:\n
+
+Correo electrónico: TechnoCroption@gmail.com\n
+Teléfono: +1 (123) 456-7890\n
+Chat en línea:  https://www.TechnoCroption.com/chat\n
+Agradecimiento:\n
+
+Agradecemos su comprensión y cooperación. Esperamos que continúe disfrutando de los servicios que ofrece Techno Croption.\n
+
+Con cuidado,\n
+
+El equipo de soporte Techno Croption\n
       `;
 
-        enviarCorreo(email, 'Contraseña de tu Cuenta', emailContent);
+        enviarCorreo(email, 'Credenciales de inicio de sesión para su cuenta de Techno Croption', emailContent);
 
         res.json({ msg: "Correo enviado" });
 
@@ -202,4 +212,84 @@ export const getPassword = async (req, res) => {
         res.status(500).json({ msg: "Error interno del servidor" });
     }
 };
-
+export const exportPDF = async (req, res) => {
+    try {
+      const pool = await getConnection();
+      const result = await pool.request().query("SELECT * FROM persona");
+  
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage();
+  
+      const headers = ['Cédula', 'Primer Nombre', 'Segundo Nombre', 'Primer Apellido', 'Segundo Apellido', 'Email', 'Estado', 'ID Tipo Persona'];
+      const tableWidth = 500;
+        const columnWidths = {
+            Cedula: 100,
+            'Primer Nombre': 100,
+            'Segundo Nombre': 100,
+            'Primer Apellido': 100,
+            'Segundo Apellido': 100,
+            Email: 100,
+            Estado: 100,
+            'ID Tipo Persona': 100,
+        };
+      const cellPadding = 15;
+      const fontSize = 12;
+      const textHeight = fontSize + cellPadding;
+  
+      let x = 50;
+      let y = page.getHeight() - 50 - textHeight;
+      let y0 = y;
+  
+      // Dibujar encabezados de la tabla
+      headers.forEach(header => {
+        const columnWidth = columnWidths[header] || (tableWidth / headers.length);
+        page.drawText(header, {
+          x,
+          y,
+          size: fontSize,
+        });
+        x += columnWidth;
+      });
+  
+      x = 50;
+      y -= textHeight;
+  
+      // Dibujar filas de la tabla
+      result.recordset.forEach(row => {
+        const rowData = [];
+        headers.forEach(header => {
+          rowData.push(row[header]);
+        });
+  
+        rowData.forEach((cell, index) => {
+          const columnWidth = columnWidths[headers[index]] || (tableWidth / headers.length);
+          page.drawText(cell.toString(), {
+            x,
+            y,
+            size: fontSize,
+          });
+          x += columnWidth;
+        });
+  
+        x = 50;
+        y -= textHeight;
+      });
+  
+      // Guardar el PDF en un archivo
+      const pdfBytes = await pdfDoc.save();
+      fs.writeFileSync('Listado_usuarios.pdf', pdfBytes);
+  
+      // Enviar el archivo PDF como respuesta
+      res.download('Listado_usuarios.pdf', 'Listado_usuarios.pdf', (err) => {
+        if (err) {
+          console.error('Error sending PDF file:', err);
+        } else {
+          console.log('PDF file sent successfully');
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send('Internal Server Error');
+    }
+  };
+  
